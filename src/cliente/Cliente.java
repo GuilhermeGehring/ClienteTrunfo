@@ -21,6 +21,7 @@ import javax.imageio.IIOException;
 public class Cliente {
 
     private String nome;
+    private String senha;
 
     public String getNome() {
         return nome;
@@ -30,11 +31,20 @@ public class Cliente {
         this.nome = nome;
     }
     
+    public String getSenha() {
+        return senha;
+    }
+
+    public void setSenha(String senha) {
+        this.senha = senha;
+    }
+    
     //socket para comunicar com servidor
     private Socket socket;
     
-    public Cliente(String nome){
+    public Cliente(String nome, String senha){
         this.nome = nome;
+        this.senha = senha;
     }
     private Socket conectaComServidor(String host, int porta) throws IOException {
         try {
@@ -54,7 +64,7 @@ public class Cliente {
     public static void main(String[] args) {
         try{
             Scanner leitura = new Scanner(System.in);
-            Cliente cliente = new Cliente("Araldi");
+            Cliente cliente = new Cliente("Guilherme", "teste123");
             //conexao com server
             Socket socket = cliente.conectaComServidor("localhost", 5555);
             //streams de saida e entrada
@@ -65,13 +75,29 @@ public class Cliente {
             do {
                 //protocolo
                 //envio
-                System.out.print("Texto do cliente: ");
-                String texto = leitura.nextLine();
-                output.writeUTF(texto);
+                System.out.print("0 - Sair\n1 - Login\nInforme a opção desejada: ");
+                String opcao = leitura.nextLine();
+                switch (opcao) {
+                    case "0":
+                        output.writeUTF("tchau");
+                        break;
+                    case "1":
+                        String texto = "LOGIN;";
+                        System.out.print("Informe o usuário: ");
+                        texto += leitura.nextLine();
+                        System.out.print("Informe a senha: ");
+                        texto += ";" + leitura.nextLine();
+                        output.writeUTF(texto);
+                        break;
+                    default:
+                        output.writeUTF(opcao);
+                        break;
+                        
+                }
                 output.flush();
                 //recebimento
                 msg = input.readUTF();
-                System.out.println("Servidor respondeu: "  + msg);                
+                System.out.println("Servidor respondeu: "  + msg);
             } while (!msg.equals("pare"));
             //fecha streams e conexão
             output.close();
