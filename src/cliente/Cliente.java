@@ -21,7 +21,6 @@ import javax.imageio.IIOException;
 public class Cliente {
 
     private String nome;
-    private String senha;
 
     public String getNome() {
         return nome;
@@ -31,20 +30,11 @@ public class Cliente {
         this.nome = nome;
     }
     
-    public String getSenha() {
-        return senha;
-    }
-
-    public void setSenha(String senha) {
-        this.senha = senha;
-    }
-    
     //socket para comunicar com servidor
     private Socket socket;
     
-    public Cliente(String nome, String senha){
+    public Cliente(String nome){
         this.nome = nome;
-        this.senha = senha;
     }
     private Socket conectaComServidor(String host, int porta) throws IOException {
         try {
@@ -64,7 +54,7 @@ public class Cliente {
     public static void main(String[] args) {
         try{
             Scanner leitura = new Scanner(System.in);
-            Cliente cliente = new Cliente("Guilherme", "teste123");
+            Cliente cliente = new Cliente("Guilherme");
             String protocolo;
             //conexao com server
             Socket socket = cliente.conectaComServidor("localhost", 5555);
@@ -76,19 +66,22 @@ public class Cliente {
             do {
                 //protocolo
                 //envio
-                System.out.print("0 - Sair\n1 - Login\nInforme a opção desejada: ");
+                System.out.print("0 - Sair\n1 - Login\n2 - Logout\nInforme a opção desejada: ");
                 String opcao = leitura.nextLine();
                 switch (opcao) {
                     case "0":
-                        output.writeUTF("TCHAU");
+                        output.writeUTF("SAIR");
                         break;
                     case "1":
-                        String texto = "LOGIN:";
+                        String texto = "LOGIN;";
                         System.out.print("Informe o usuário: ");
-                        texto += leitura.nextLine();
+                        texto += "usuario:" + leitura.nextLine();
                         System.out.print("Informe a senha: ");
-                        texto += ":" + leitura.nextLine();
+                        texto += ";senha:" + leitura.nextLine();
                         output.writeUTF(texto);
+                        break;
+                    case "2":
+                        output.writeUTF("LOGOUT");
                         break;
                     default:
                         output.writeUTF(opcao);
@@ -100,7 +93,7 @@ public class Cliente {
                 msg = input.readUTF();
                 System.out.println("Servidor respondeu: "  + msg);
                 protocolo = msg.split(":")[0];
-            } while (!protocolo.equals("TCHAURESPONSE"));
+            } while (!protocolo.equals("SAIRRESPONSE"));
             //fecha streams e conexão
             output.close();
             input.close();
