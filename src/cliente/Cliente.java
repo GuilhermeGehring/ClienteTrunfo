@@ -58,7 +58,8 @@ public class Cliente {
             Cliente cliente = new Cliente("Guilherme");
             String protocolo;
             String status;
-            ArrayList<Trunfo> cartas = new ArrayList<>();
+            ArrayList<Trunfo> baralho = new ArrayList<>();
+            Trunfo carta = new Trunfo();
             //conexao com server
             Socket socket = cliente.conectaComServidor("localhost", 5555);
             //streams de saida e entrada
@@ -98,7 +99,7 @@ public class Cliente {
                         }
                         break;
                     case AUTENTICADO:
-                        System.out.print("0 - Logout\n1 - Jogar\n2 - Buscar Cartas\nInforme a opção desejada: ");
+                        System.out.print("0 - Logout\n1 - Jogar\n2 - Buscar e enviar Cartas\nInforme a opção desejada: ");
                         opcao = leitura.nextLine();
                         switch (opcao) {
                             case "0":
@@ -106,8 +107,11 @@ public class Cliente {
                                 break;
                             case "1":
                                 output.writeUTF("JOGAR");
+                                break;
+                            case "2":
                                 String caminho = "/home/guilherme/NetBeansProjects/ClienteTrunfo/src/util/cartas.txt";
-                                cartas = ArquivoTexto.leitor(caminho);
+                                baralho = ArquivoTexto.leitor(caminho);
+                                output.writeUTF("CARTAS");
                                 break;
                             default:
                                 output.writeUTF(opcao);
@@ -116,17 +120,23 @@ public class Cliente {
                         }
                         break;
                     case JOGANDO:
-                        Trunfo carta = cartas.remove(0);
-                        System.out.print("Jogador: " + carta.getNome());
-                        System.out.print("1 - Chute: " + carta.getChute());
-                        System.out.print("2 - Defesa: " + carta.getDefesa());
-                        System.out.print("3 - Drible: " + carta.getDrible());
-                        System.out.print("4 - Velocidade: " + carta.getVelocidade());
-                        System.out.print("Informe o atributo: ");
-                        opcao = leitura.nextLine();
-                            
+                        try {
+                            System.out.println("Você possui " + baralho.size() + " cartas");
+                            carta = baralho.remove(0);
+                            System.out.println("Jogador: " + carta.getNome());
+                            System.out.println("1 - Chute: " + carta.getChute());
+                            System.out.println("2 - Defesa: " + carta.getDefesa());
+                            System.out.println("3 - Drible: " + carta.getDrible());
+                            System.out.println("4 - Velocidade: " + carta.getVelocidade());
+                            System.out.print("Informe o atributo: ");
+                            opcao = leitura.nextLine();
 
-                        break;
+                            output.writeUTF("JOGADA;opcao:" + opcao + ';' + carta.request());                        
+                            break;
+                        } catch (Exception e) {
+                            output.writeUTF("TERMINAR");
+                            break;
+                        }
                 }
                 output.flush();
                 //recebimento
@@ -148,6 +158,23 @@ public class Cliente {
                             break;
                         case "JOGARRESPONSE":
                             estado = Estados.JOGANDO;
+                            break;
+                        case "TERMINARRESPONSE":
+                            estado = Estados.AUTENTICADO;
+                            break;
+                        case "CARTASRESPONSE":
+                            for (int i = 0; i <= baralho.size() / 2; i++) {
+                                output.writeUTF("CARTA;" + baralho.remove(0).request());
+                                output.flush();
+                            }
+                            output.writeUTF("CARTASEND");
+                            output.flush();
+                            msg = input.readUTF();
+                            break;
+                        case "GANHOURESPONSE":
+                            baralho.add(carta);
+                            msg = input.readUTF();
+                            baralho.add(new Trunfo(msg.split(";")[1], msg.split(";")[2], Integer.parseInt(msg.split(";")[3]) , Integer.parseInt(msg.split(";")[4]), Integer.parseInt(msg.split(";")[5]), Integer.parseInt(msg.split(";")[6])));
                             break;
                     }
                 }

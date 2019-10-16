@@ -82,5 +82,8 @@ public class Trunfo {
         return nome + "{" + tipo + ", defesa:" + defesa + ", drible:" + drible + ", chute:" + chute + "}";
     }
     
+    public String request() {
+        return "nome:" + nome + ";tipo:" + tipo + ";defesa:" + defesa + ";drible:" + drible + ";chute:" + chute + ";velocidade:" + velocidade;
+    }
     
 }
